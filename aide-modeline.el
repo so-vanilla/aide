@@ -196,20 +196,23 @@ Walk `claude-code-ide--processes' and match buffer names."
 ;;;; doom-modeline integration
 
 (with-eval-after-load 'doom-modeline
-  (when (fboundp 'doom-modeline-def-segment)
-    (doom-modeline-def-segment aide-info
-      "Claude Code session information segment."
-      (when-let ((dir (aide-modeline--buffer-project-dir (current-buffer))))
-        (if-let ((data (gethash dir aide-modeline--data-cache)))
-            (aide-modeline--format-data data)
-          (propertize " Claude Code ... " 'face 'aide-modeline-normal)))))
+  ;; doom-modeline-def-segment マクロを手動展開。
+  ;; バイトコンパイル時に doom-modeline が未ロードだと、マクロが関数呼び出しとして
+  ;; コンパイルされ aide-info が変数評価されてしまう問題を回避する。
+  (defun doom-modeline-segment--aide-info ()
+    "Claude Code session information segment."
+    (when-let ((dir (aide-modeline--buffer-project-dir (current-buffer))))
+      (if-let ((data (gethash dir aide-modeline--data-cache)))
+          (aide-modeline--format-data data)
+        (propertize " Claude Code ... " 'face 'aide-modeline-normal))))
+  (add-to-list 'doom-modeline-fn-alist
+               '(aide-info . doom-modeline-segment--aide-info))
 
-  (when (fboundp 'doom-modeline-def-modeline)
-    (doom-modeline-def-modeline 'aide
-      '(bar aide-info)
-      '()))
+  (doom-modeline-def-modeline 'aide
+    '(bar aide-info)
+    '())
 
-  (when aide-modeline-mode
+  (when (bound-and-true-p aide-modeline-mode)
     (aide-modeline--update-all-buffers)))
 
 (defun aide-modeline--apply-doom (buffer)
