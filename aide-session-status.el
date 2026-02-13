@@ -164,6 +164,8 @@ Returns parsed data as alist, or nil on failure."
   "Handle file-notify EVENT for the status directory."
   (let ((action (nth 1 event))
         (file (nth 2 event)))
+    (when (eq action 'renamed)
+      (setq file (nth 3 event)))
     (when (and file (string-suffix-p ".json" file))
       (let ((changed
              (pcase action
@@ -179,18 +181,16 @@ Returns parsed data as alist, or nil on failure."
   "Start watching the status directory."
   (let ((dir aide-session-status-data-directory))
     (make-directory dir t)
-    ;; Try file-notify first
     (condition-case nil
         (setq aide-session-status--file-watch
               (file-notify-add-watch
                dir '(change)
                #'aide-session-status--on-notify))
-      (error
-       ;; Fallback to polling
-       (setq aide-session-status--poll-timer
-             (run-with-timer 0 aide-session-status-poll-interval
-                             #'aide-session-status--scan-directory))))
-    ;; Initial scan
+      (error nil))
+    ;; inotify 成否に関わらずポーリングも起動
+    (setq aide-session-status--poll-timer
+          (run-with-timer 0 aide-session-status-poll-interval
+                          #'aide-session-status--scan-directory))
     (aide-session-status--scan-directory)))
 
 (defun aide-session-status--stop-watching ()
