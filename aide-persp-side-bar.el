@@ -79,7 +79,8 @@
           (display-buffer buffer '((display-buffer-in-side-window)
                                    (side . left)
                                    (slot . 0)
-                                   (window-width . 30))))
+                                   (window-width . 30)
+                                   (no-other-window . t))))
     (select-window aide-persp-side-bar-window)))
 
 (defun aide-persp-side-bar-toggle ()
@@ -138,7 +139,15 @@
                            'action `(lambda (button)
                                       (persp-switch ,persp))
                            'follow-link t)
-            (insert "\n")))
+            (insert "\n"))
+          ;; Session status line
+          (let ((status-str (and (fboundp 'aide-session-status-format)
+                                 (aide-session-status-format persp))))
+            (insert (if status-str
+                        (format "    %s\n" status-str)
+                      "\n")))
+          ;; Blank line between perspectives
+          (insert "\n"))
       (insert "No perspectives\n"))
     (goto-char (point-min))
     (setq buffer-read-only t)
@@ -173,8 +182,12 @@
       (persp-switch persp-name))))
 
 (defun aide-persp-side-bar-refresh ()
-  "Refresh the sidebar content and update highlight."
+  "Refresh the sidebar content and update highlight.
+When called interactively, also re-scan the session status directory."
   (interactive)
+  (when (and (called-interactively-p 'any)
+             (fboundp 'aide-session-status--scan-directory))
+    (aide-session-status--scan-directory))
   (when (and aide-persp-side-bar-window
              (window-live-p aide-persp-side-bar-window))
     (with-current-buffer (window-buffer aide-persp-side-bar-window)
@@ -229,6 +242,11 @@
 
 (advice-add 'persp-state-restore :after
             (lambda (&rest _) (aide-persp-side-bar-refresh)))
+
+(with-eval-after-load 'aide-session-status
+  (add-hook 'aide-session-status--change-hook
+            (lambda ()
+              (run-with-idle-timer 0.1 nil #'aide-persp-side-bar-refresh))))
 
 (provide 'aide-persp-side-bar)
 ;;; aide-persp-side-bar.el ends here

@@ -18,6 +18,12 @@
             version = "0.1.0";
             src = ./aide-modeline.el;
           };
+          aide-session-status = pkgs.emacsPackages.trivialBuild {
+            pname = "aide-session-status";
+            version = "0.1.0";
+            src = ./aide-session-status.el;
+            packageRequires = [ pkgs.emacsPackages.perspective ];
+          };
           aide-persp-side-bar = pkgs.emacsPackages.trivialBuild {
             pname = "aide-persp-side-bar";
             version = "0.1.0";
