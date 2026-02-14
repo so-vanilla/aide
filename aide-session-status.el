@@ -31,7 +31,7 @@
 ;; for each perspective.
 ;;
 ;; Uses file-notify (inotify) for directory watching with polling
-;; fallback.  Integrates with aide-persp-side-bar to display status
+;; fallback.  Integrates with aide-persp-sidebar to display status
 ;; indicators in the sidebar.
 
 ;;; Code:
