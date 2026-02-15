@@ -96,7 +96,7 @@ Called with no arguments.")
 (defun aide-session-status--data-file (project-dir)
   "Return the status file path for PROJECT-DIR."
   (expand-file-name
-   (concat (md5 (directory-file-name project-dir)) ".json")
+   (concat (md5 (directory-file-name (file-truename project-dir))) ".json")
    aide-session-status-data-directory))
 
 (defun aide-session-status--read-file (file)
@@ -229,7 +229,7 @@ Returns parsed data as alist, or nil on failure."
   "Get the session status for PERSP-NAME.
 Returns \"working\", \"waiting\", \"idle\", or nil if no session."
   (when-let ((dir (aide-session-status--persp-project-dir persp-name)))
-    (when-let ((data (gethash (directory-file-name dir) aide-session-status--cache)))
+    (when-let ((data (gethash (directory-file-name (file-truename dir)) aide-session-status--cache)))
       (alist-get 'state data))))
 
 (defun aide-session-status-format (persp-name)

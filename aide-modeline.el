@@ -89,7 +89,7 @@
 (defun aide-modeline--data-file (project-dir)
   "Return the intermediate data file path for PROJECT-DIR."
   (expand-file-name
-   (concat (md5 (directory-file-name project-dir)) ".json")
+   (concat (md5 (directory-file-name (file-truename project-dir))) ".json")
    aide-modeline-data-directory))
 
 (defun aide-modeline--read-data (project-dir)
